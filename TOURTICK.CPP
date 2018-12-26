@@ -1,4 +1,5 @@
 #include<fstream.h>
+#include<stdio.h>
 #include<conio.h>
 #include<string.h>
 class TourBus
@@ -38,12 +39,30 @@ class TourBus
 	return max_seats;
 	}
 };
+class Ticket
+{
+	char name[50];
+	int bid;
+	char desination[100];
+	char time[50];
+	int fare;
+	public:
+	Ticket()
+	{
+	}
+	void generate()
+	{
+	}
+	void display()
+	{
+	}
+};
 void TourBus::input()
 {
 	cout<<"Enter bus id ";
 	cin>>bid;
 	cout<<"Enter bus destination ";
-	cin>>destination;
+	gets(destination);
 	cout<<"Enter time of bus ";
 	cin>>time;
 }
@@ -53,11 +72,15 @@ void TourBus::display()
 }
 void TourBus::show()
 {
+	cout<<"Bus Id "<<bid<<endl;
+	cout<<"Desination "<<destination<<endl;
+	cout<<"Time "<<time<<endl;
+	cout<<"No. of seats remaining "<<max_seats-booked<<endl;
 }
 void main()
 {
 	int ch;
-	fstream F;
+	fstream F,G;
 	TourBus b;
 	do
 	{
@@ -66,7 +89,8 @@ void main()
 		cout<<"Press 3 - Display All Buses"<<endl;
 		cout<<"Press 4 - Delete a Bus"<<endl;
 		cout<<"Press 5 - Book a ticket "<<endl;
-		cout<<"Press 6 - Exit "<<endl;
+		cout<<"Press 6 - Display Booked Tickets "<<endl;
+		cout<<"Press 7 - Exit "<<endl;
 		cout<<"Enter your choice ";
 		cin>>ch;
 		switch(ch)
@@ -81,6 +105,31 @@ void main()
 			clrscr();
 
 		break;
+		case 2:
+			int id,chk=0;
+			cout<<"Enter the bus id to be displayed ";
+			cin>>id;
+			F.open("tour.dat",ios::in | ios::binary);
+			if(F.fail())
+				cout<<"Can't open file "<<endl;
+			else
+			{
+				while(F.read((char*)&b,sizeof(b)))
+				{
+					if(b.getid()==id)
+					{
+						b.show();
+						chk=1;
+						break;
+					}
+				}
+				if(chk==0)
+					cout<<"Bus not Found"<<endl;
+			}
+			F.close();
+			break;
+
+
 		case 3:
 			F.open("tour.dat",ios::in | ios::binary);
 			if(F.fail())
@@ -95,6 +144,41 @@ void main()
 			getch();
 			clrscr();
 		break;
+		case 4:
+			chk=0;
+			cout<<"Enter the bus id to be deleted ";
+			cin>>id;
+			F.open("tour.dat",ios::in | ios::binary);
+			G.open("temp.dat",ios::out | ios::binary);
+			if(F.fail())
+				cout<<"Can't open file "<<endl;
+			else
+			{
+				while(F.read((char*)&b,sizeof(b)))
+				{
+					if(b.getid()!=id)
+					{
+					G.write((char*)&b,sizeof(b));
+					}
+					else
+					{
+						b.show();
+						chk=1;
+
+					}
+				}
+				if(chk==0)
+					cout<<"Bus not Found"<<endl;
+
+				else
+					cout<<"Bus Deleted "<<endl;
+			}
+			F.close();
+			G.close();
+			remove("tour.dat");
+			rename("temp.dat","tour.dat");
+			break;
+
 		}
-	}while(ch!=6);
+	}while(ch!=7);
 }
