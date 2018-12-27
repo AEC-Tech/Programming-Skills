@@ -8,12 +8,14 @@ class TourBus
 	char time[50];
 	int max_seats;
 	int booked;
+	int fare;
 	public:
 	TourBus()
 	{
 	bid=0;
 	max_seats=50;
 	booked=0;
+	fare=0;
 	strcpy(time,"9:10am");
 	strcpy(destination,"");
 	}
@@ -23,6 +25,10 @@ class TourBus
 	int getid()
 	{
 	return bid;
+	}
+	void book()
+	{
+	booked++;
 	}
 	char* getDestination()
 	{
@@ -38,24 +44,28 @@ class TourBus
 	int getMax(){
 	return max_seats;
 	}
+	int getFare()
+	{
+		return fare;
+	}
 };
 class Ticket
 {
 	char name[50];
-	int bid;
-	char desination[100];
-	char time[50];
-	int fare;
+	TourBus bus;
 	public:
-	Ticket()
+
+	void generate(char cname[], TourBus tb)
 	{
-	}
-	void generate()
-	{
+		strcpy(name,cname);
+		bus=tb;
 	}
 	void display()
 	{
-	}
+	cout<<"Customer Name "<<name<<endl;
+	cout<<"Details of Bus "<<endl;
+	bus.show();
+		}
 };
 void TourBus::input()
 {
@@ -65,10 +75,12 @@ void TourBus::input()
 	gets(destination);
 	cout<<"Enter time of bus ";
 	cin>>time;
+	cout<<"Enter fare of the bus ";
+	cin>>fare;
 }
 void TourBus::display()
 {
-	cout<<bid<<"\t"<<destination<<"\t"<<time<<"\t"<<max_seats<<"\t"<<booked<<"\n";
+	cout<<bid<<"\t"<<destination<<"\t"<<time<<"\t"<<max_seats<<"\t"<<booked<<"\t"<<fare<<"\n";
 }
 void TourBus::show()
 {
@@ -84,6 +96,7 @@ void main()
 	TourBus b;
 	do
 	{
+		clrscr();
 		cout<<"Press 1 - Add a New Tour Bus"<<endl;
 		cout<<"Press 2 - Show Selected Bus"<<endl;
 		cout<<"Press 3 - Display All Buses"<<endl;
@@ -178,6 +191,61 @@ void main()
 			remove("tour.dat");
 			rename("temp.dat","tour.dat");
 			break;
+		case 5:
+			char dest[70],cname[50];
+			int bid;
+			Ticket t;
+			cout<<"Enter the destination ";
+			gets(dest);
+			F.open("tour.dat",ios::in | ios::out | ios::binary);
+			if(F.fail())
+				cout<<"Can't open file "<<endl;
+			else
+			{
+				while(F.read((char*)&b,sizeof(b)))
+				{
+					if(strcmp(b.getDestination(),dest)==0)
+					{
+						b.show();
+						chk=1;
+						cout<<"Enter the customer name ";
+						gets(cname);
+						b.book();
+						t.generate(cname,b);
+						G.open("tickets.dat",ios::app | ios::binary);
+						G.write((char*)&t,sizeof(t));
+						G.close();
+					F.seekp(F.tellg()-sizeof(b),ios::beg);
+
+					F.write((char*)&b,sizeof(b));
+					cout<<"Ticket booked"<<endl;
+					getch();
+					break;
+					}
+				}
+				if(chk==0)
+					cout<<"No Bus Found"<<endl;
+					/*	if(b.getid()==id)
+						{                  cout<<"booking"<<endl;
+						break;
+						}     */
+			}
+			F.close();
+			break;
+		case 6:
+			cout<<"Booked Tickets "<<endl;
+			G.open("tickets.dat",ios::in | ios::binary);
+			if(G.fail())
+				cout<<"can't open file "<<endl;
+			else
+			{
+				while(G.read((char*)&t,sizeof(t)))
+				t.display();
+			}
+
+			G.close();
+			cout<<"Press a key to continue ";
+			getch();
 
 		}
 	}while(ch!=7);
